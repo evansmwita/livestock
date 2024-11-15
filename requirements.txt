@@ -1,0 +1,6 @@
+pandas
+streamlit
+pickle
+SMTP
+MIMEText
+MIMEMultipart

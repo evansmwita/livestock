@@ -7,7 +7,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
-import uuid  # Importing uuid to generate unique client ID
+import uuid  # For generating a dynamic client ID
 
 # Load the trained model
 @st.cache_resource
@@ -37,17 +37,23 @@ broker = "test.mosquitto.org"  # Public broker for testing
 port = 1883
 topic = "livestock/health_monitor"
 
-# Debugging: Generate and print the unique client ID to ensure it is correct
-client_id = f"LivestockHealthPublisher-{uuid.uuid4()}"
-st.write(f"Generated MQTT Client ID: {client_id}")
+# Generate a unique MQTT client ID dynamically using uuid
+client_id = f"LivestockHealthPublisher-{uuid.uuid4().hex[:8]}"
 
-# MQTT setup with dynamic client ID
-try:
-    client = mqtt.Client(client_id)
-    client.connect(broker, port)
-except ValueError as e:
-    st.error(f"Error initializing MQTT client: {e}")
-    raise
+# MQTT setup
+client = mqtt.Client(client_id)  # Use the generated unique client ID
+
+# Optional: Define callback functions (you can define more if needed)
+def on_connect(client, userdata, flags, rc):
+    print(f"Connected with result code {rc}")
+    # You can subscribe to a topic here if needed
+
+def on_message(client, userdata, msg):
+    print(f"Message received: {msg.payload.decode()}")
+
+# Set the callbacks
+client.on_connect = on_connect
+client.on_message = on_message
 
 # Function to simulate sensor data
 def generate_sensor_data():

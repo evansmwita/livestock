@@ -7,7 +7,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
-import uuid  # For generating a dynamic client ID
+import uuid
 
 # Load the trained model
 @st.cache_resource
@@ -26,7 +26,7 @@ st.header("Email Configuration")
 smtp_server = st.text_input("SMTP Server", "smtp.gmail.com")
 smtp_port = st.number_input("SMTP Port", value=587)
 email_user = st.text_input("Your Email Address")
-email_password = st.text_input("Your Email Password", type="password")
+email_password = st.text_input("Your Email Password (or App Password)", type="password")
 farmer_email = st.text_input("Farmer's Email Address")
 
 if not all([smtp_server, smtp_port, email_user, email_password, farmer_email]):
@@ -37,23 +37,16 @@ broker = "test.mosquitto.org"  # Public broker for testing
 port = 1883
 topic = "livestock/health_monitor"
 
-# Generate a unique MQTT client ID dynamically using uuid
-client_id = f"LivestockHealthPublisher-{uuid.uuid4().hex[:8]}"
+# Dynamic client ID generation for MQTT
+client_id = f"LivestockHealthPublisher-{uuid.uuid4()}"
 
 # MQTT setup
-client = mqtt.Client(client_id)  # Use the generated unique client ID
-
-# Optional: Define callback functions (you can define more if needed)
-def on_connect(client, userdata, flags, rc):
-    print(f"Connected with result code {rc}")
-    # You can subscribe to a topic here if needed
-
-def on_message(client, userdata, msg):
-    print(f"Message received: {msg.payload.decode()}")
-
-# Set the callbacks
-client.on_connect = on_connect
-client.on_message = on_message
+client = mqtt.Client(client_id)
+try:
+    client.connect(broker, port)
+    st.success(f"Connected to MQTT broker with client ID: {client_id}")
+except Exception as e:
+    st.error(f"Failed to connect to MQTT broker: {e}")
 
 # Function to simulate sensor data
 def generate_sensor_data():
@@ -89,10 +82,12 @@ def send_email_alert(health_status, latitude, longitude):
     
     try:
         server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(email_user, email_password)
-        server.send_message(msg)
+        server.starttls()  # Start TLS encryption
+        server.login(email_user, email_password)  # Authenticate using username and app password
+        server.send_message(msg)  # Send the email
         st.success(f"Email sent to: {farmer_email}")
+    except smtplib.SMTPAuthenticationError as e:
+        st.error(f"SMTP Authentication failed. Please check your credentials. Error: {e}")
     except Exception as e:
         st.error(f"Failed to send email: {e}")
     finally:

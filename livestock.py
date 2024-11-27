@@ -7,6 +7,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import time
+import uuid  # Importing uuid to generate unique client ID
 
 # Load the trained model
 @st.cache_resource
@@ -36,8 +37,11 @@ broker = "test.mosquitto.org"  # Public broker for testing
 port = 1883
 topic = "livestock/health_monitor"
 
-# MQTT setup
-client = mqtt.Client("LivestockHealthPublisher")
+# Generate a unique client ID using uuid
+client_id = f"LivestockHealthPublisher-{uuid.uuid4()}"
+
+# MQTT setup with dynamic client ID
+client = mqtt.Client(client_id)
 client.connect(broker, port)
 
 # Function to simulate sensor data

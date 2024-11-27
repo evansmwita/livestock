@@ -11,7 +11,7 @@ import time
 # Load the trained model
 @st.cache_resource
 def load_model():
-    model_path = "livestock_health_model.pkl"
+    model_path = "model.pkl"
     with open(model_path, 'rb') as file:
         return pickle.load(file)
 

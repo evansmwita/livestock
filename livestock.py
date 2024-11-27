@@ -37,12 +37,17 @@ broker = "test.mosquitto.org"  # Public broker for testing
 port = 1883
 topic = "livestock/health_monitor"
 
-# Generate a unique client ID using uuid
+# Debugging: Generate and print the unique client ID to ensure it is correct
 client_id = f"LivestockHealthPublisher-{uuid.uuid4()}"
+st.write(f"Generated MQTT Client ID: {client_id}")
 
 # MQTT setup with dynamic client ID
-client = mqtt.Client(client_id)
-client.connect(broker, port)
+try:
+    client = mqtt.Client(client_id)
+    client.connect(broker, port)
+except ValueError as e:
+    st.error(f"Error initializing MQTT client: {e}")
+    raise
 
 # Function to simulate sensor data
 def generate_sensor_data():

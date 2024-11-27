@@ -1,3 +1,5 @@
-pandas
-streamlit
 paho-mqtt
+pandas
+scikit-learn
+smtplib
+email
